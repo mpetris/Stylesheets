@@ -74,5 +74,39 @@ of this software, even if advised of the possibility of such damage.
   <xsl:template match="tei:div[@type='illustration']">
       <xsl:apply-templates/>
   </xsl:template>
-
+  
+  <!-- we do not want automatic insertion of 'figure+number', derived from html_figures.xsl -->
+  <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl">
+    <desc>Process element figure/tei:head</desc>
+  </doc>
+  <xsl:template match="tei:figure/tei:head">
+    <xsl:variable name="captionlabel">
+      <xsl:for-each select="..">
+	<xsl:call-template name="calculateFigureNumber"/>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="$outputTarget='html5'">
+	<figcaption>
+          <xsl:call-template name="makeRendition">
+	    <xsl:with-param name="default">caption</xsl:with-param>
+	  </xsl:call-template>
+	  <xsl:copy-of select="$captionlabel"/>
+	  <xsl:if test="not($captionlabel='')">
+	    <xsl:text>. </xsl:text>
+	  </xsl:if>
+	  <xsl:apply-templates/>
+	</figcaption>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:element name="{if (ancestor::tei:q) then 'span' else 'div'}">
+          <xsl:call-template name="makeRendition">
+	    <xsl:with-param name="default">caption</xsl:with-param>
+	  </xsl:call-template>
+	  <xsl:apply-templates/>
+	</xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
 </xsl:stylesheet>
